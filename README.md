@@ -1,5 +1,5 @@
 ﻿# OpenSprinkler Preview Card
-A Home Assistant card to display a preview of future irrigation runs using a bar-chart format.
+A Home Assistant card to display historical and predicted future irrigation runs using a gantt chart format.
 
 ![GitHub Release](https://img.shields.io/github/v/release/EdLeckert/opensprinkler-preview-card)
 ![Dynamic Regex Badge](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2FEdLeckert%2Fopensprinkler-preview-card%2Fmain%2FVERSION&search=.*&label=version&color=blue)
