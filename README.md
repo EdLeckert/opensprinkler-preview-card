@@ -9,15 +9,17 @@ A Home Assistant card to display a preview of future irrigation runs using a bar
 
 ## What is the OpenSprinkler Preview Card?
 
-The OpenSprinkler Preview Card is a card for the [Home Assistant]([https://home-assistant.io]) Dashboard UI. It displays the
-predicted future irrigation run schedule for OpenSprinkler by using the Calendar entity in the
+The OpenSprinkler Preview Card is a card for the [Home Assistant]([https://home-assistant.io]) Dashboard UI. It displays
+historical irrigation runs as well as the predicted future run schedule for OpenSprinkler by using the Calendar entity in the
 [OpenSprinkler Integration for Home Assistant](https://github.com/vinteo/hass-opensprinkler) integration.
 Version 2.0.0 of the integration is required to use this card.
 
 ### Features
 
 - Works with the Calendar entity in the [OpenSprinkler Integration for Home Assistant](https://github.com/vinteo/hass-opensprinkler) integration
-- Displays the day's calendar entries in a bar-chart format
+- Displays each day's calendar entries in a bar-chart format
+- Shows predicted future runs based on current schedule settings
+- Shows actual historical runs if Logging enabled in OpenSprinkler
 - Similar to OpenSprinkler's `Program Preview` feature
 - Provides a date-picker as well as next and previous day buttons
 - Hovering over a run displays more information
@@ -50,7 +52,8 @@ entity: calendar.opensprinkler_schedule
 The card defaults to the current day, which is the only day where a Weather Adjustment, if in affect,
 will be applied to the run times. Move forward or backward using the arrow buttons, or choose a date from the date picker.
 
-Note that run events in the past are calculated using rules now in effect, and are not a history of exact run behavior.
+If Logging in OpenSprinkler is not enabled, the run events shown in the past are calculated using rules now in effect,
+and are not a history of exact run behavior.
 
 The Calendar entity on which this card is based is meant to show an approximation of future events,
 just like the Program Preview. It considers the following OpenSprinkler settings:
@@ -60,9 +63,10 @@ just like the Program Preview. It considers the following OpenSprinkler settings
 - Additional Start Times, Repeating and Fixed
 - Date Range
 - Rain Delay
+- Weather Restrictions
 - Station Groups
 - Station Delay
 - Station Ignore Rain Delay
-- Weather Adjustment, current day only, multi-day not supported yet
+- Weather Adjustment, current day only, including multi-day averages if selected
 
 If you hover over a run, additional information from the Calendar will be shown.
