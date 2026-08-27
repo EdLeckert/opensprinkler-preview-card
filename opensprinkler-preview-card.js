@@ -61,8 +61,8 @@ class OpenSprinklerPreviewCard extends LitElement {
         const startOfDay = new Date(this.currentDate);
         startOfDay.setHours(0, 0, 0, 0);
 
-        const endOfDay = new Date(this.currentDate);
-        endOfDay.setHours(23, 59, 59, 999);
+        // Add a day to new Date object.
+        const endOfDay = new Date(new Date(startOfDay).setDate(startOfDay.getDate() + 1));
 
         try {
             const events = await this.hass.callApi(
