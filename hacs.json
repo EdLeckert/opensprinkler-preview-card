@@ -1,5 +1,9 @@
 {
   "name": "OpenSprinkler Preview Card",
+  "content_in_root": true,
+  "filename": "opensprinkler-preview-card.js",
   "render_readme": true,
-  "filename": "opensprinkler-preview-card.js"
+  "homeassistant": "2024.1.0",
+  "hacs": "1.32.0",
+  "country": []
 }
