@@ -49,11 +49,11 @@ type: custom:opensprinkler-preview-card
 entity: calendar.opensprinkler_schedule
 ```
 
-The card defaults to the current day, which is the only day where a Weather Adjustment, if in affect,
-will be applied to the run times. Move forward or backward using the arrow buttons, or choose a date from the date picker.
+The card defaults to the current day, which is the only day where a Weather Adjustment, if in affect, will be applied
+to predicted run times.
 
 If Logging in OpenSprinkler is not enabled, the run events shown in the past are calculated using rules now in effect,
-and are not a history of exact run behavior.
+and are not a history of exact run behavior. If Logging is enabled, actual historical run times including weather adjustments will be shown.
 
 The Calendar entity on which this card is based is meant to show an approximation of future events,
 just like the Program Preview. It considers the following OpenSprinkler settings:
