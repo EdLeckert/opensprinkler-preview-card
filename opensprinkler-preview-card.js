@@ -1,6 +1,6 @@
 ﻿const LitElement = Object.getPrototypeOf(customElements.get("ha-panel-lovelace"));
 const { html, css } = LitElement.prototype;
-var VERSION = "1.0.1"
+var VERSION = "1.0.2"
 class OpenSprinklerPreviewCard extends LitElement {
     static get properties() {
         return {
@@ -262,6 +262,30 @@ class OpenSprinklerPreviewCard extends LitElement {
         const linearPositionPercent = tileWidthRatio === 1 ? 0 : firstLinePercent / (1 - tileWidthRatio);
         const laneBackgroundPosition = `${linearPositionPercent}% 0`;
 
+        // Determine the density of hourly labels based on the total hours displayed
+        var hourlyDensity = "xx-small";
+
+        switch (true) {
+            case (this.totalHours > 24):
+                hourlyDensity = "xx-large";
+                break;
+            case (this.totalHours > 20):
+                hourlyDensity = "x-large";
+                break;
+            case (this.totalHours > 16):
+                hourlyDensity = "large";
+                break;
+            case (this.totalHours > 12):
+                hourlyDensity = "medium";
+                break;
+            case (this.totalHours > 8):
+                hourlyDensity = "small";
+                break;
+            case (this.totalHours > 4):
+                hourlyDensity = "x-small";
+                break;
+        }
+
         // Generate matching timeline text labels row matrix data arrays
         const hourlyLabels = [];
         if (this.events.length > 0) {
@@ -361,7 +385,7 @@ class OpenSprinklerPreviewCard extends LitElement {
                 })}
                   </ul>
 
-                  <div class="hourly-labels-row">
+                  <div class="hourly-labels-row" hours-density="${hourlyDensity}" >
                     ${hourlyLabels.map(label => html`
                       <div class="hourly-tick-wrapper" style="left: ${label.left}%;">
                         <span class="hourly-tick-label">${label.text}</span>
@@ -483,12 +507,12 @@ class OpenSprinklerPreviewCard extends LitElement {
         justify-content: space-between;
         font-size: 0.85em;
         color: var(--secondary-text-color);
-        }
-        .chart-relative-box {
+      }
+      .chart-relative-box {
         position: relative !important;
         width: 100%;
-        }
-        .live-now-line {
+      }
+      .live-now-line {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -498,16 +522,16 @@ class OpenSprinklerPreviewCard extends LitElement {
         pointer-events: none;
         overflow: visible;
         height: 140%
-        }
-        .chart-body {
+      }
+      .chart-body {
         display: flex !important;
         flex-direction: column !important;
         gap: 12px;
         padding: 0;
         margin: 0;
         list-style: none;
-        }
-        .station-row {
+      }
+      .station-row {
         display: grid !important;
         grid-template-columns: 120px 1fr !important;
         gap: 10px !important;
@@ -516,8 +540,8 @@ class OpenSprinklerPreviewCard extends LitElement {
         width: 100% !important;
         padding: 0;
         margin: 0;
-        }
-        .timeline-lane {
+      }
+      .timeline-lane {
         position: relative !important;
         display: block !important;
         height: 32px !important;
@@ -531,32 +555,120 @@ class OpenSprinklerPreviewCard extends LitElement {
         padding: 0;
         margin: 0;
         transition: box-shadow 0.3s ease-in-out;
-        }
-        .watering-active {
+      }
+      .watering-active {
         box-shadow: 0 0 10px var(--error-color, #f44336), inset 0 1px 3px rgba(0,0,0,0.12) !important;
         animation: pulseGlow 2s infinite alternate ease-in-out;
-        }
-        @keyframes pulseGlow {
+      }
+      @keyframes pulseGlow {
         0% { box-shadow: 0 0 4px rgba(244, 67, 54, 0.4), inset 0 1px 3px rgba(0,0,0,0.12); }
         100% { box-shadow: 0 0 14px rgba(244, 67, 54, 0.9), inset 0 1px 3px rgba(0,0,0,0.12); }
-        }
-        .hourly-labels-row {
+      }
+      .hourly-labels-row {
         position: relative !important;
         margin-left: 130px !important;
         height: 20px;
         margin-top: 6px;
+        container-type: inline-size; /* Tracks width changes */
+        container-name: hoursContainer;
+      }
+      @container hoursContainer (width < 800px) {
+        .hourly-labels-row[hours-density="xx-large"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
         }
-        .hourly-tick-wrapper {
+      }
+      @container hoursContainer (width < 700px) {
+        .hourly-labels-row[hours-density="x-large"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 560px) {
+        .hourly-labels-row[hours-density="large"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 420px) {
+        .hourly-labels-row[hours-density="medium"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 300px) {
+        .hourly-labels-row[hours-density="small"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 140px) {
+        .hourly-labels-row[hours-density="x-small"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 100px) {
+        .hourly-labels-row[hours-density="xx-small"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 400px) {
+        .hourly-labels-row[hours-density="xx-large"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 330px) {
+        .hourly-labels-row[hours-density="x-large"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 270px) {
+        .hourly-labels-row[hours-density="large"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 200px) {
+        .hourly-labels-row[hours-density="medium"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 150px) {
+        .hourly-labels-row[hours-density="small"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 190px) {
+        .hourly-labels-row[hours-density="xx-large"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 160px) {
+        .hourly-labels-row[hours-density="x-large"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 130px) {
+        .hourly-labels-row[hours-density="large"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 100px) {
+        .hourly-labels-row[hours-density="medium"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 100px) {
+        .hourly-labels-row[hours-density="xx-large"] .hourly-tick-wrapper:not(:nth-child(16n+1)) {
+          visibility: hidden;
+        }
+      }
+      .hourly-tick-wrapper {
         position: absolute;
         transform: translateX(-50%);
         white-space: nowrap;
-        }
-        .hourly-tick-label {
+      }
+      .hourly-tick-label {
         font-size: 0.75em;
         color: var(--secondary-text-color);
         font-weight: 500;
-        }
-        .program-bar {
+        white-space: nowrap;
+      }
+      .program-bar {
         position: absolute !important;
         top: 4px !important;
         bottom: 4px !important;
@@ -568,14 +680,14 @@ class OpenSprinklerPreviewCard extends LitElement {
         box-shadow: 0 1px 3px rgba(0,0,0,0.15);
         z-index: 2 !important;
         cursor: help;
-        }
-        .bar-bubble-text {
+      }
+      .bar-bubble-text {
         font-size: 0.75em;
         color: white !important;
         font-weight: bold;
         white-space: nowrap;
         padding: 0 2px;
-        }
+      }
         `;
     }
 
