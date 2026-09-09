@@ -263,7 +263,7 @@ class OpenSprinklerPreviewCard extends LitElement {
         const laneBackgroundPosition = `${linearPositionPercent}% 0`;
 
         // Determine the density of hourly labels based on the total hours displayed
-        var hourlyDensity = "small";
+        var hourlyDensity = "xx-small";
 
         switch (true) {
             case (this.totalHours > 24):
@@ -277,6 +277,12 @@ class OpenSprinklerPreviewCard extends LitElement {
                 break;
             case (this.totalHours > 12):
                 hourlyDensity = "medium";
+                break;
+            case (this.totalHours > 8):
+                hourlyDensity = "small";
+                break;
+            case (this.totalHours > 4):
+                hourlyDensity = "x-small";
                 break;
         }
 
@@ -571,17 +577,17 @@ class OpenSprinklerPreviewCard extends LitElement {
           visibility: hidden;
         }
       }
-      @container hoursContainer (width < 600px) {
+      @container hoursContainer (width < 700px) {
         .hourly-labels-row[hours-density="x-large"] .hourly-tick-wrapper:nth-child(even) {
           visibility: hidden;
         }
       }
-      @container hoursContainer (width < 500px) {
+      @container hoursContainer (width < 560px) {
         .hourly-labels-row[hours-density="large"] .hourly-tick-wrapper:nth-child(even) {
           visibility: hidden;
         }
       }
-      @container hoursContainer (width < 400px) {
+      @container hoursContainer (width < 420px) {
         .hourly-labels-row[hours-density="medium"] .hourly-tick-wrapper:nth-child(even) {
           visibility: hidden;
         }
@@ -591,17 +597,27 @@ class OpenSprinklerPreviewCard extends LitElement {
           visibility: hidden;
         }
       }
+      @container hoursContainer (width < 140px) {
+        .hourly-labels-row[hours-density="x-small"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 100px) {
+        .hourly-labels-row[hours-density="xx-small"] .hourly-tick-wrapper:nth-child(even) {
+          visibility: hidden;
+        }
+      }
       @container hoursContainer (width < 400px) {
         .hourly-labels-row[hours-density="xx-large"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
           visibility: hidden;
         }
       }
-      @container hoursContainer (width < 300px) {
+      @container hoursContainer (width < 330px) {
         .hourly-labels-row[hours-density="x-large"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
           visibility: hidden;
         }
       }
-      @container hoursContainer (width < 250px) {
+      @container hoursContainer (width < 270px) {
         .hourly-labels-row[hours-density="large"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
           visibility: hidden;
         }
@@ -613,6 +629,31 @@ class OpenSprinklerPreviewCard extends LitElement {
       }
       @container hoursContainer (width < 150px) {
         .hourly-labels-row[hours-density="small"] .hourly-tick-wrapper:not(:nth-child(4n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 190px) {
+        .hourly-labels-row[hours-density="xx-large"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 160px) {
+        .hourly-labels-row[hours-density="x-large"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 130px) {
+        .hourly-labels-row[hours-density="large"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 100px) {
+        .hourly-labels-row[hours-density="medium"] .hourly-tick-wrapper:not(:nth-child(8n+1)) {
+          visibility: hidden;
+        }
+      }
+      @container hoursContainer (width < 100px) {
+        .hourly-labels-row[hours-density="xx-large"] .hourly-tick-wrapper:not(:nth-child(16n+1)) {
           visibility: hidden;
         }
       }
