@@ -1,6 +1,6 @@
 ﻿const LitElement = Object.getPrototypeOf(customElements.get("ha-panel-lovelace"));
 const { html, css } = LitElement.prototype;
-var VERSION = "1.0.2"
+var VERSION = "1.1.0"
 class OpenSprinklerPreviewCard extends LitElement {
     static get properties() {
         return {
