@@ -310,7 +310,8 @@ class OpenSprinklerPreviewCard extends LitElement {
             <h2 class="date-display">${dateHeader}</h2>
             <span class="calendar-icon">📅</span>
             <input 
-              type="date" 
+              type="date"
+              name="date-picker"
               class="hidden-date-picker" 
               .value="${isoString}" 
               @input="${this.handleDatePicker}"
