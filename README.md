@@ -26,6 +26,13 @@ Version 2.0.0 of the integration is required to use this card.
 
 ## Installation
 
+### HACS
+
+1. Install HACS if you don't have it already
+2. Open HACS in Home Assistant
+3. Search for "OpenSprinkler Preview Card"
+4. Click the download button. ⬇️
+
 ### Manual
 
 1. Download `opensprinkler-preview-card.js` from `Releases`.
