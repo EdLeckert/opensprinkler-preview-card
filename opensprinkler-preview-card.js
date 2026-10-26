@@ -270,8 +270,8 @@ class OpenSprinklerPreviewCard extends LitElement {
         if (!isToday) return false;
 
         return stationEvents.some(event => {
-            const start = new Date(event.start.dateTime || event.start.date).getTime();
-            const end = new Date(event.end.dateTime || event.end.date).getTime();
+            const start = event.start.getTime();
+            const end = event.end.getTime();
             return nowMs >= start && nowMs <= end;
         });
     }
