@@ -1,6 +1,6 @@
 ﻿const LitElement = Object.getPrototypeOf(customElements.get("ha-panel-lovelace"));
 const { html, css } = LitElement.prototype;
-var VERSION = "1.1.2"
+var VERSION = "1.2.0"
 class OpenSprinklerPreviewCard extends LitElement {
     static get properties() {
         return {
@@ -30,16 +30,101 @@ class OpenSprinklerPreviewCard extends LitElement {
         this.totalHours = 12;
         this.gridOffsetRatio = 0;
         this._timeUpdateInterval = null;
+        this._hassSubs = [];
     }
 
     connectedCallback() {
         super.connectedCallback();
         this._timeUpdateInterval = setInterval(() => this.updateNowMarker(), 30000);
+        this.updated(new Set(['currentDate']));
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         if (this._timeUpdateInterval) clearInterval(this._timeUpdateInterval);
+        this._clearCardSubscriptions();
+    }
+
+    _setupCardSubscription(entityId, startOfDay, endOfDay) {
+        const boundTime = startOfDay.getTime();
+
+        // 1. Kick off the asynchronous network request
+        const unsubPromise = this.hass.connection.subscribeMessage(
+            (message) => {
+                // TARGET VIEW GUARD: Discard messages instantly if the user shifted to a different day
+                const currentViewTime = new Date(this.currentDate);
+                currentViewTime.setHours(0, 0, 0, 0);
+                if (currentViewTime.getTime() !== boundTime) {
+                    return;
+                }
+
+                if (message && message.events) {
+                    this._processWebSocketEvents(message.events);
+                }
+            },
+            {
+                type: "calendar/event/subscribe",
+                entity_id: entityId,
+                start: startOfDay.toISOString(),
+                end: endOfDay.toISOString()
+            }
+        ).catch(err => {
+            console.error("Failed to map live WebSocket channel", err);
+            return null;
+        });
+
+        // 2. Synchronously push the promise reference immediately into the tracking stack
+        this._hassSubs.push(unsubPromise);
+    }
+
+    async _clearCardSubscriptions() {
+        // Isolate and empty the active memory array synchronously first
+        const subsToClear = [...this._hassSubs];
+        this._hassSubs = [];
+
+        // Safely drain and execute the cleanup routines as they finish resolving
+        for (const subPromise of subsToClear) {
+            try {
+                const unsubFunc = await subPromise;
+                if (typeof unsubFunc === 'function') {
+                    unsubFunc();
+                }
+            } catch (err) {
+                // Ignore cleanup drops during sleeping states
+            }
+        }
+    }
+
+    _processWebSocketEvents(rawEvents) {
+        //console.log(new Date().toLocaleTimeString(), "Received WebSocket calendar events:", rawEvents);
+        // Parse incoming events and convert UTC strings to browser-local Date objects
+        this.events = rawEvents.map(event => {
+            return {
+                ...event,
+                // Overwriting ISO strings with browser-localized native Date structures
+                start: new Date(event.start),
+                end: new Date(event.end)
+            };
+        });
+        this.processTimelineBounds();
+        this.updateNowMarker();
+    }
+
+    updated(changedProperties) {
+        super.updated(changedProperties);
+
+        const configChanged = changedProperties.has('config');
+        const dateChanged = changedProperties.has('currentDate');
+        const targetEntityId = this.config?.entity;
+
+        const startOfDay = new Date(this.currentDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(new Date(startOfDay).setDate(startOfDay.getDate() + 1));
+
+        if (targetEntityId && (configChanged || dateChanged)) {
+            this._clearCardSubscriptions();
+            this._setupCardSubscription(targetEntityId, startOfDay, endOfDay);
+        }
     }
 
     setConfig(config) {
@@ -47,35 +132,6 @@ class OpenSprinklerPreviewCard extends LitElement {
             throw new Error("You must define a calendar entity.");
         }
         this.config = config;
-    }
-
-    updated(changedProperties) {
-        if (changedProperties.has("hass") || changedProperties.has("currentDate")) {
-            this.fetchCalendarData();
-        }
-    }
-
-    async fetchCalendarData() {
-        if (!this.hass || !this.config.entity) return;
-
-        const startOfDay = new Date(this.currentDate);
-        startOfDay.setHours(0, 0, 0, 0);
-
-        // Add a day to new Date object.
-        const endOfDay = new Date(new Date(startOfDay).setDate(startOfDay.getDate() + 1));
-
-        try {
-            const events = await this.hass.callApi(
-                "GET",
-                `calendars/${this.config.entity}?start=${startOfDay.toISOString()}&end=${endOfDay.toISOString()}`
-            );
-
-            this.events = events || [];
-            this.processTimelineBounds();
-            this.updateNowMarker();
-        } catch (err) {
-            console.error("Error fetching Home Assistant calendar data:", err);
-        }
     }
 
     generateHueFromString(str) {
@@ -97,12 +153,11 @@ class OpenSprinklerPreviewCard extends LitElement {
             this.dynamicColorMap = {};
             return;
         }
-
         const uniqueStations = [...new Set(this.events.map((e) => e.summary))];
         const stationWithEarliestTime = uniqueStations.map(stationName => {
             const stationEvents = this.events.filter(e => e.summary === stationName);
             const earliestStart = Math.min(
-                ...stationEvents.map(e => new Date(e.start.dateTime || e.start.date).getTime())
+                ...stationEvents.map(e => e.start.getTime())
             );
             return { name: stationName, time: earliestStart };
         });
@@ -120,8 +175,8 @@ class OpenSprinklerPreviewCard extends LitElement {
         this.dynamicColorMap = newColorMap;
 
         const timestamps = this.events.flatMap((e) => [
-            new Date(e.start.dateTime || e.start.date).getTime(),
-            new Date(e.end.dateTime || e.end.date).getTime(),
+            e.start.getTime(),
+            e.end.getTime(),
         ]);
 
         const padding = 15 * 60 * 1000;
@@ -215,8 +270,8 @@ class OpenSprinklerPreviewCard extends LitElement {
         if (!isToday) return false;
 
         return stationEvents.some(event => {
-            const start = new Date(event.start.dateTime || event.start.date).getTime();
-            const end = new Date(event.end.dateTime || event.end.date).getTime();
+            const start = event.start.getTime();
+            const end = event.end.getTime();
             return nowMs >= start && nowMs <= end;
         });
     }
@@ -359,8 +414,8 @@ class OpenSprinklerPreviewCard extends LitElement {
                         }
 
                             ${stationEvents.map((event) => {
-                            const startTimeStr = event.start.dateTime || event.start.date;
-                            const endTimeStr = event.end.dateTime || event.end.date;
+                            const startTimeStr = event.start;
+                            const endTimeStr = event.end;
                             const barStyle = this.calculateBarStyles(startTimeStr, endTimeStr);
                             const durationMin = Math.round(
                                 (new Date(endTimeStr).getTime() - new Date(startTimeStr).getTime()) / 60000
