@@ -1,6 +1,6 @@
 ﻿const LitElement = Object.getPrototypeOf(customElements.get("ha-panel-lovelace"));
 const { html, css } = LitElement.prototype;
-var VERSION = "1.2.0"
+var VERSION = "1.2.1"
 class OpenSprinklerPreviewCard extends LitElement {
     static get properties() {
         return {
@@ -70,6 +70,13 @@ class OpenSprinklerPreviewCard extends LitElement {
             }
         ).catch(err => {
             console.error("Failed to map live WebSocket channel", err);
+
+            // If the backend drops the command because it's starting up (unknown_command),
+            // wait a bit and requeue a date change so the update triggers a retry.
+            const timerId = setTimeout(() => {
+                this.updated(new Set(['currentDate']));
+            }, 4000);
+
             return null;
         });
 
@@ -96,7 +103,6 @@ class OpenSprinklerPreviewCard extends LitElement {
     }
 
     _processWebSocketEvents(rawEvents) {
-        //console.log(new Date().toLocaleTimeString(), "Received WebSocket calendar events:", rawEvents);
         // Parse incoming events and convert UTC strings to browser-local Date objects
         this.events = rawEvents.map(event => {
             return {
